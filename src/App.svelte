@@ -14,11 +14,12 @@
   // Quit is handled in Rust with app.exit(0); other actions arrive here as events.
   $effect(() => {
     const unlisten = listen<string>("menu-action", ({ payload: id }) => {
-      if (id === "open")         fileStore.open();
-      else if (id === "save")    fileStore.save();
-      else if (id === "save_as") fileStore.saveAs();
-      else if (id === "close")   fileStore.filePath ? fileStore.close() : getCurrentWindow().close();
-      else if (id === "help")    showShortcuts = true;
+      if (id === "open")              fileStore.open();
+      else if (id === "save")         fileStore.save();
+      else if (id === "save_as")      fileStore.saveAs();
+      else if (id === "close")        fileStore.filePath ? fileStore.close() : getCurrentWindow().close();
+      else if (id === "open_browser") { if (fileStore.filePath) invoke("open_in_browser", { path: fileStore.filePath }); }
+      else if (id === "help")         showShortcuts = true;
     });
     return () => { unlisten.then((fn) => fn()); };
   });

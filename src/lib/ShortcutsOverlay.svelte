@@ -47,7 +47,7 @@
         <h3>File</h3>
         <dl>
           <dt><kbd>Ctrl</kbd><kbd>O</kbd></dt><dd>Open file</dd>
-          <dt><kbd>Ctrl</kbd><kbd>W</kbd></dt><dd>Close file / quit</dd>
+          <dt><kbd>Ctrl</kbd><kbd>W</kbd></dt><dd>Close file</dd>
           <dt><kbd>Ctrl</kbd><kbd>Q</kbd></dt><dd>Quit</dd>
           <dt><kbd>Ctrl</kbd><kbd>S</kbd></dt><dd>Save</dd>
           <dt><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>S</kbd></dt><dd>Save as…</dd>

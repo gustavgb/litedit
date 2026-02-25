@@ -13,6 +13,16 @@ fn get_initial_file(state: tauri::State<AppState>) -> Option<String> {
     state.initial_file.lock().unwrap().take()
 }
 
+/// Opens the given file path in the system's default web browser.
+/// Using `webbrowser::open` instead of the opener plugin ensures the OS routes
+/// the request to a browser even if another application (e.g. a markdown editor)
+/// is registered as the default handler for the file extension.
+#[tauri::command]
+fn open_in_browser(path: String) {
+    let url = format!("file://{}", path);
+    webbrowser::open(&url).ok();
+}
+
 /// Sets the window title.
 /// On Wayland, tao/wry have a bug where set_title() doesn't update the GTK
 /// header bar. Workaround: directly update the HeaderBar widget on the main thread.
@@ -70,23 +80,25 @@ pub fn run() {
         .manage(AppState {
             initial_file: Mutex::new(initial_file),
         })
-        .invoke_handler(tauri::generate_handler![get_initial_file, set_title])
+        .invoke_handler(tauri::generate_handler![get_initial_file, set_title, open_in_browser])
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             // Build the native menu in Rust so GTK registers the accel groups
             // synchronously — before the window is shown. This is the only
             // reliable way to intercept Ctrl+W / Ctrl+Q before WebKitGTK does.
-            let open_i    = MenuItem::with_id(app, "open",    "Open\u{2026}",    true, Some("CmdOrCtrl+O"))?;
-            let save_i    = MenuItem::with_id(app, "save",    "Save",            true, Some("CmdOrCtrl+S"))?;
-            let save_as_i = MenuItem::with_id(app, "save_as", "Save As\u{2026}", true, Some("CmdOrCtrl+Shift+S"))?;
-            let close_i   = MenuItem::with_id(app, "close",   "Close",           true, Some("CmdOrCtrl+W"))?;
-            let sep       = PredefinedMenuItem::separator(app)?;
-            let quit_i    = MenuItem::with_id(app, "quit",    "Quit",            true, Some("CmdOrCtrl+Q"))?;
+            let open_i         = MenuItem::with_id(app, "open",         "Open\u{2026}",         true, Some("CmdOrCtrl+O"))?;
+            let save_i         = MenuItem::with_id(app, "save",         "Save",                 true, Some("CmdOrCtrl+S"))?;
+            let save_as_i      = MenuItem::with_id(app, "save_as",      "Save As\u{2026}",      true, Some("CmdOrCtrl+Shift+S"))?;
+            let close_i        = MenuItem::with_id(app, "close",        "Close",                true, Some("CmdOrCtrl+W"))?;
+            let open_browser_i = MenuItem::with_id(app, "open_browser", "Open in Browser",      true, None::<&str>)?;
+            let sep            = PredefinedMenuItem::separator(app)?;
+            let sep2           = PredefinedMenuItem::separator(app)?;
+            let quit_i         = MenuItem::with_id(app, "quit",         "Quit",                 true, Some("CmdOrCtrl+Q"))?;
 
             let file_menu = Submenu::with_items(
                 app, "File", true,
-                &[&open_i, &save_i, &save_as_i, &close_i, &sep, &quit_i],
+                &[&open_i, &save_i, &save_as_i, &close_i, &sep, &open_browser_i, &sep2, &quit_i],
             )?;
 
             let help_i    = MenuItem::with_id(app, "help", "Keyboard Shortcuts", true, Some("F1"))?;

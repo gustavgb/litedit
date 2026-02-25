@@ -23,10 +23,21 @@ export function createLinkCompletion(getFilePath: () => string) {
       : null;
     if (!baseDir) return null;
 
-    const lastSlash = partial.lastIndexOf("/");
-    const dirSuffix = lastSlash >= 0 ? partial.slice(0, lastSlash) : "";
-    const filePrefix = lastSlash >= 0 ? partial.slice(lastSlash + 1) : partial;
+    // Decode percent-encoded characters (e.g. %20 → space) so the directory
+    // lookup uses real filesystem paths, not URL-encoded strings.
+    const decodedPartial = (() => { try { return decodeURIComponent(partial); } catch { return partial; } })();
+
+    const lastSlash = decodedPartial.lastIndexOf("/");
+    const dirSuffix = lastSlash >= 0 ? decodedPartial.slice(0, lastSlash) : "";
+    const filePrefix = lastSlash >= 0 ? decodedPartial.slice(lastSlash + 1) : decodedPartial;
     const searchDir = dirSuffix ? `${baseDir}/${dirSuffix}` : baseDir;
+
+    // Re-encode each directory segment so links inserted into the document
+    // are valid URLs (spaces become %20, etc.).
+    const encodedDirSuffix = dirSuffix
+      .split("/")
+      .map((s) => encodeURIComponent(s))
+      .join("/");
 
     try {
       const entries = await readDir(searchDir);
@@ -39,9 +50,10 @@ export function createLinkCompletion(getFilePath: () => string) {
         )
         .map((e) => {
           const suffix = e.isDirectory ? "/" : "";
-          const label = dirSuffix
-            ? `${dirSuffix}/${e.name}${suffix}`
-            : `${e.name}${suffix}`;
+          const encodedName = encodeURIComponent(e.name ?? "");
+          const label = encodedDirSuffix
+            ? `${encodedDirSuffix}/${encodedName}${suffix}`
+            : `${encodedName}${suffix}`;
           return {
             label,
             type: e.isDirectory ? "namespace" : "text",
