@@ -1,0 +1,10 @@
+[Desktop Entry]
+Categories=TextEditor;Utility;
+Comment=A minimalist text and markdown editor
+Exec=litedit %F
+Icon=litedit
+Name=Litedit
+StartupWMClass=litedit
+Terminal=false
+Type=Application
+MimeType=text/markdown;text/x-markdown;

@@ -1,0 +1,57 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #1c1c1e;
+  --bg-header: #161618;
+  --text: #e0e0e0;
+  --text-dim: #6e6e73;
+  --text-dim-hover: #a0a0a8;
+  --accent: #9d86e9;
+  --border: #2c2c2e;
+  --font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", "SF Mono",
+    ui-monospace, "Courier New", monospace;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #ffffff;
+    --bg-header: #f0f0ef;
+    --text: #1a1a1a;
+    --text-dim: #7a7a7a;
+    --text-dim-hover: #3a3a3a;
+    --accent: #6a50c7;
+    --border: #d5d5d0;
+  }
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Remove default focus outlines — CodeMirror handles its own */
+:focus {
+  outline: none;
+}
+
+/* Thin selection */
+::selection {
+  background: rgba(157, 134, 233, 0.25);
+}
