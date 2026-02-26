@@ -1,7 +1,7 @@
 {
-  "productName": "Litedit",
+  "productName": "Himark",
   "version": "0.1.0",
-  "identifier": "com.litedit.app",
+  "identifier": "com.himark.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -24,7 +24,7 @@
     ],
     "linux": {
       "deb": {
-        "desktopTemplate": "litedit.desktop"
+        "desktopTemplate": "himark.desktop"
       }
     },
     "icon": [
@@ -38,7 +38,7 @@
   "app": {
     "windows": [
       {
-        "title": "Litedit",
+        "title": "Himark",
         "width": 1000,
         "height": 720,
         "minWidth": 480,

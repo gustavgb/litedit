@@ -1,6 +1,6 @@
 use std::sync::Mutex;
-use tauri::{Emitter, Manager};
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
+use tauri::{Emitter, Manager};
 
 /// Holds the file path passed as a CLI argument (or via file-manager association).
 struct AppState {
@@ -11,16 +11,6 @@ struct AppState {
 #[tauri::command]
 fn get_initial_file(state: tauri::State<AppState>) -> Option<String> {
     state.initial_file.lock().unwrap().take()
-}
-
-/// Opens the given file path in the system's default web browser.
-/// Using `webbrowser::open` instead of the opener plugin ensures the OS routes
-/// the request to a browser even if another application (e.g. a markdown editor)
-/// is registered as the default handler for the file extension.
-#[tauri::command]
-fn open_in_browser(path: String) {
-    let url = format!("file://{}", path);
-    webbrowser::open(&url).ok();
 }
 
 /// Sets the window title.
@@ -58,7 +48,8 @@ fn set_title(app: tauri::AppHandle, title: String) {
                 gtk_win.queue_draw();
             }
         }
-    }).ok();
+    })
+    .ok();
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -72,47 +63,48 @@ pub fn run() {
     }
 
     // Capture the CLI file argument before the event loop starts.
-    let initial_file = std::env::args()
-        .skip(1)
-        .find(|a| !a.starts_with('-'));
+    let initial_file = std::env::args().skip(1).find(|a| !a.starts_with('-'));
 
     tauri::Builder::default()
         .manage(AppState {
             initial_file: Mutex::new(initial_file),
         })
-        .invoke_handler(tauri::generate_handler![get_initial_file, set_title, open_in_browser])
+        .invoke_handler(tauri::generate_handler![get_initial_file, set_title])
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             // Build the native menu in Rust so GTK registers the accel groups
             // synchronously — before the window is shown. This is the only
             // reliable way to intercept Ctrl+W / Ctrl+Q before WebKitGTK does.
-            let open_i         = MenuItem::with_id(app, "open",         "Open\u{2026}",         true, Some("CmdOrCtrl+O"))?;
-            let save_i         = MenuItem::with_id(app, "save",         "Save",                 true, Some("CmdOrCtrl+S"))?;
-            let save_as_i      = MenuItem::with_id(app, "save_as",      "Save As\u{2026}",      true, Some("CmdOrCtrl+Shift+S"))?;
-            let close_i        = MenuItem::with_id(app, "close",        "Close",                true, Some("CmdOrCtrl+W"))?;
-            let open_browser_i = MenuItem::with_id(app, "open_browser", "Open in Browser",      true, None::<&str>)?;
-            let sep            = PredefinedMenuItem::separator(app)?;
-            let sep2           = PredefinedMenuItem::separator(app)?;
-            let quit_i         = MenuItem::with_id(app, "quit",         "Quit",                 true, Some("CmdOrCtrl+Q"))?;
+            let open_i = MenuItem::with_id(app, "open", "Open\u{2026}", true, Some("CmdOrCtrl+O"))?;
+            let save_i = MenuItem::with_id(app, "save", "Save", true, Some("CmdOrCtrl+S"))?;
+            let save_as_i = MenuItem::with_id(
+                app,
+                "save_as",
+                "Save As\u{2026}",
+                true,
+                Some("CmdOrCtrl+Shift+S"),
+            )?;
+            let close_i = MenuItem::with_id(app, "close", "Close", true, Some("CmdOrCtrl+W"))?;
+            let sep = PredefinedMenuItem::separator(app)?;
+            let quit_i = MenuItem::with_id(app, "quit", "Quit", true, Some("CmdOrCtrl+Q"))?;
 
             let file_menu = Submenu::with_items(
-                app, "File", true,
-                &[&open_i, &save_i, &save_as_i, &close_i, &sep, &open_browser_i, &sep2, &quit_i],
+                app,
+                "File",
+                true,
+                &[&open_i, &save_i, &save_as_i, &close_i, &sep, &quit_i],
             )?;
 
-            let help_i    = MenuItem::with_id(app, "help", "Keyboard Shortcuts", true, Some("F1"))?;
-            let help_menu = Submenu::with_items(app, "Help", true, &[&help_i])?;
-
-            let menu = Menu::with_items(app, &[&file_menu, &help_menu])?;
+            let menu = Menu::with_items(app, &[&file_menu])?;
             app.set_menu(menu)?;
 
             // Handle menu events in Rust. Quit exits directly (no IPC round-trip).
             // Other actions are forwarded to the frontend as "menu-action" events.
-            app.on_menu_event(|app, event| {
-                match event.id().as_ref() {
-                    "quit" => app.exit(0),
-                    id => { app.emit("menu-action", id).ok(); }
+            app.on_menu_event(|app, event| match event.id().as_ref() {
+                "quit" => app.exit(0),
+                id => {
+                    app.emit("menu-action", id).ok();
                 }
             });
 

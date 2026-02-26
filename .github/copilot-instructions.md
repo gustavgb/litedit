@@ -1,4 +1,4 @@
-# Litedit — Copilot Instructions
+# Himark — Copilot Instructions
 
 A minimalist text/markdown editor built with Tauri V2 + Svelte 5 + CodeMirror 6.
 
@@ -50,7 +50,7 @@ src-tauri/
 - Header shows filename only; hovering reveals full path (CSS crossfade).
 - Light/dark theme follows OS preference via `prefers-color-scheme`.
 - CSS variables: `--bg`, `--bg-header`, `--text`, `--text-dim`, `--text-dim-hover`, `--accent`, `--border`, `--font-mono`.
-- The app name is **Litedit**.
+- The app name is **Himark**.
 
 ---
 
@@ -145,7 +145,7 @@ tauri::Builder::default()
     .plugin(tauri_plugin_fs::init())
     .plugin(tauri_plugin_dialog::init())
     .setup(|app| {
-        // Open a file passed as CLI arg, e.g. `litedit README.md`
+        // Open a file passed as CLI arg, e.g. `himark README.md`
         if let Some(path) = std::env::args().skip(1).find(|a| !a.starts_with('-')) {
             let handle = app.handle().clone();
             std::thread::spawn(move || {
@@ -162,8 +162,8 @@ The 300 ms delay gives the WebView time to initialize before the event fires.
 
 ## File Association & CLI
 
-- `tauri.conf.json` `bundle.fileAssociations` registers `text/markdown` for `.md`/`.markdown` extensions. When a `.deb`/AppImage is installed, Ubuntu knows Litedit can open markdown files (shows in "Open With" and as default option).
-- The installed binary (`/usr/bin/litedit` after `.deb` install) accepts a file path as its first positional argument: `litedit README.md`. The Rust `setup` hook reads it via `std::env::args()` and emits an `open-file` event.
+- `tauri.conf.json` `bundle.fileAssociations` registers `text/markdown` for `.md`/`.markdown` extensions. When a `.deb`/AppImage is installed, Ubuntu knows Himark can open markdown files (shows in "Open With" and as default option).
+- The installed binary (`/usr/bin/himark` after `.deb` install) accepts a file path as its first positional argument: `himark README.md`. The Rust `setup` hook reads it via `std::env::args()` and emits an `open-file` event.
 - The frontend (`App.svelte`) listens for `"open-file"` via `listen()` from `@tauri-apps/api/event` and calls `fileStore.openPath(path)`.
 - `fileStore.openPath(path)` — reads and opens a file at a given absolute path without showing a dialog. `fileStore.open()` now delegates to it after resolving the dialog.
 

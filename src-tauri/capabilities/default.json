@@ -63,6 +63,7 @@
         }
       ]
     },
-    "fs:allow-unwatch"
+    "fs:allow-unwatch",
+    "fs:default"
   ]
 }

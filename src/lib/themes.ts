@@ -15,7 +15,7 @@ export const baseTheme = EditorView.baseTheme({
     lineHeight: "1.75",
   },
   ".cm-content": {
-    padding: "32px 0",
+    padding: "32px 0 128px",
     maxWidth: "740px",
     marginInline: "auto",
     paddingInline: "48px",

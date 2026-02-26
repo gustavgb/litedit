@@ -17,7 +17,12 @@
   } from "@codemirror/commands";
   import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
   import { languages } from "@codemirror/language-data";
-  import { autocompletion } from "@codemirror/autocomplete";
+  import {
+    autocompletion,
+    closeBrackets,
+    closeBracketsKeymap,
+    deleteBracketPair,
+  } from "@codemirror/autocomplete";
   import { baseTheme, themeCompartment, buildThemeExtension } from "./themes";
   import { createLinkCompletion } from "./linkCompletion";
 
@@ -33,6 +38,7 @@
   let view: EditorView | undefined;
   // Tracks the last content value we pushed INTO the editor from outside.
   // Only update the editor when content diverges from this — never on keystrokes.
+  // svelte-ignore state_referenced_locally
   let lastExternalContent = content;
   // Set to true during programmatic dispatches to suppress the onchange callback.
   let suppressChange = false;
@@ -63,7 +69,29 @@
         rectangularSelection(),
         crosshairCursor(),
         keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab]),
-        markdown({ base: markdownLanguage, codeLanguages: languages, addKeymap: true }),
+        markdown({
+          base: markdownLanguage,
+          codeLanguages: languages,
+          addKeymap: true,
+        }),
+        markdownLanguage.data.of({
+          closeBrackets: {
+            brackets: [
+              "(",
+              "[",
+              "{",
+              "'",
+              '"',
+              "`",
+              "```",
+              "*",
+              "**",
+              "_",
+              "__",
+            ],
+          },
+        }),
+        closeBrackets(),
         themeCompartment.of(buildThemeExtension(isDark)),
         baseTheme,
         autocompletion({

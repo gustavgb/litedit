@@ -30,7 +30,7 @@ class FileStore {
 
   updateTitle() {
     const name = this.filePath ? this.filePath.split("/").at(-1)! : "Untitled";
-    const title = this.dirty ? `\u2022 ${name} \u2014 Litedit` : `${name} \u2014 Litedit`;
+    const title = this.dirty ? `\u2022 ${name} \u2014 Himark` : `${name} \u2014 Himark`;
     document.title = title; // X11 / fallback
     invoke("set_title", { title }); // Wayland: also patches the GTK HeaderBar
   }
@@ -109,6 +109,7 @@ class FileStore {
   // Returns a cleanup function; call it when the component unmounts or when
   // filePath changes. Designed to be used inside a Svelte $effect.
 
+  // Not used currently
   startWatcher() {
     if (!this.filePath) return;
 
@@ -120,6 +121,9 @@ class FileStore {
       path,
       async (_event: WatchEvent) => {
         if (cancelled) return;
+        console.log(_event)
+        const kind = _event.type as object
+        if ('access' in kind) return;
         if (Date.now() - this.lastSaveAt < 500) return;
         try {
           this.reloading = true;
