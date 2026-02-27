@@ -52,6 +52,11 @@ fn set_title(app: tauri::AppHandle, title: String) {
     .ok();
 }
 
+#[tauri::command]
+fn close_app(app: tauri::AppHandle) {
+    app.exit(0)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // On Wayland, WebKit's DMA-BUF renderer doesn't properly clear previous
@@ -69,7 +74,11 @@ pub fn run() {
         .manage(AppState {
             initial_file: Mutex::new(initial_file),
         })
-        .invoke_handler(tauri::generate_handler![get_initial_file, set_title])
+        .invoke_handler(tauri::generate_handler![
+            get_initial_file,
+            set_title,
+            close_app
+        ])
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
@@ -102,7 +111,7 @@ pub fn run() {
             // Handle menu events in Rust. Quit exits directly (no IPC round-trip).
             // Other actions are forwarded to the frontend as "menu-action" events.
             app.on_menu_event(|app, event| match event.id().as_ref() {
-                "quit" => app.exit(0),
+                // "quit" => app.exit(0),
                 id => {
                     app.emit("menu-action", id).ok();
                 }

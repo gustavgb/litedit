@@ -8,6 +8,7 @@
     "core:default",
     "dialog:allow-open",
     "dialog:allow-save",
+    "dialog:allow-confirm",
     {
       "identifier": "fs:allow-read-text-file",
       "allow": [

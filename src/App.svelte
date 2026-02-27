@@ -4,18 +4,50 @@
   import { getCurrentWindow } from "@tauri-apps/api/window";
   import { invoke } from "@tauri-apps/api/core";
   import { listen } from "@tauri-apps/api/event";
+  import { confirm } from "@tauri-apps/plugin-dialog";
 
   // ─── Menu actions from Rust ────────────────────────────────────────────────
   // The native menu is built in Rust so accelerators (including Ctrl+W / Ctrl+Q)
   // are registered synchronously with the GTK window — before WebKitGTK loads.
   // Quit is handled in Rust with app.exit(0); other actions arrive here as events.
   $effect(() => {
-    const unlisten = listen<string>("menu-action", ({ payload: id }) => {
+    const unlisten = listen<string>("menu-action", async ({ payload: id }) => {
+      console.log(`menu action: ${id}`);
       if (id === "open") fileStore.open();
       else if (id === "save") fileStore.save();
       else if (id === "save_as") fileStore.saveAs();
-      else if (id === "close")
-        fileStore.filePath ? fileStore.close() : getCurrentWindow().close();
+      else if (id === "close") {
+        if (fileStore.filePath || fileStore.dirty) {
+          if (fileStore.dirty) {
+            const confirmation = await confirm("Discard unsaved changes?", {
+              title: "Unsaved changes",
+              kind: "warning",
+            });
+
+            if (confirmation) {
+              fileStore.close();
+            }
+          } else {
+            fileStore.close();
+          }
+        } else {
+          invoke("close_app");
+        }
+      } else if (id === "quit")
+        if (fileStore.filePath || fileStore.dirty) {
+          if (fileStore.dirty) {
+            const confirmation = await confirm("Discard unsaved changes?", {
+              title: "Unsaved changes",
+              kind: "warning",
+            });
+
+            if (confirmation) {
+              invoke("close_app");
+            }
+          } else {
+            invoke("close_app");
+          }
+        }
     });
     return () => {
       unlisten.then((fn) => fn());
