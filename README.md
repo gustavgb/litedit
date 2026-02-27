@@ -4,6 +4,8 @@
 
 A minimalist markdown editor.
 
+![App Screenshot](./screenshot.png)
+
 ## Features
 
 - Syntax highlighting for Markdown via CodeMirror 6 (Lezer parser)
