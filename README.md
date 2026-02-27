@@ -15,6 +15,7 @@ A minimalist markdown editor.
   - `Ctrl+O` — Open file
   - `Ctrl+S` — Save
   - `Ctrl+Shift+S` — Save As
+  - `Ctrl+-/+` — Zoom out/in
 
 ## Development
 
