@@ -46,7 +46,8 @@
         "resizable": true,
         "fullscreen": false,
         "decorations": true,
-        "transparent": false
+        "transparent": false,
+        "zoomHotkeysEnabled": true
       }
     ],
     "security": {
