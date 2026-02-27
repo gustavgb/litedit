@@ -12,7 +12,6 @@
   // Quit is handled in Rust with app.exit(0); other actions arrive here as events.
   $effect(() => {
     const unlisten = listen<string>("menu-action", async ({ payload: id }) => {
-      console.log(`menu action: ${id}`);
       if (id === "open") fileStore.open();
       else if (id === "save") fileStore.save();
       else if (id === "save_as") fileStore.saveAs();

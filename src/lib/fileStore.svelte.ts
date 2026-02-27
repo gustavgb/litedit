@@ -1,4 +1,4 @@
-import { open, save } from "@tauri-apps/plugin-dialog";
+import { confirm, open, save } from "@tauri-apps/plugin-dialog";
 import {
   readTextFile,
   writeTextFile,
@@ -25,6 +25,9 @@ class FileStore {
 
   // Timestamp of the most recent write — used to suppress our own watch events
   private lastSaveAt = 0;
+
+  // Cleanup function for the active file watcher (null when no file is open)
+  private unwatchFn: (() => void) | null = null;
 
   // ─── Window title ──────────────────────────────────────────────────────────
 
@@ -54,6 +57,7 @@ class FileStore {
   }
 
   async openPath(path: string) {
+    this._stopWatcher();
     try {
       const text = await readTextFile(path);
       this.filePath = path;
@@ -64,6 +68,7 @@ class FileStore {
       this.error = String(e);
     }
     this.updateTitle();
+    if (this.filePath) this._watchFile(this.filePath);
   }
 
   async open() {
@@ -88,6 +93,7 @@ class FileStore {
   }
 
   close() {
+    this._stopWatcher();
     this.filePath = "";
     this.content = "";
     this.dirty = false;
@@ -105,55 +111,48 @@ class FileStore {
   }
 
   // ─── File watcher ───────────────────────────────────────────────────────
-  //
-  // Returns a cleanup function; call it when the component unmounts or when
-  // filePath changes. Designed to be used inside a Svelte $effect.
 
-  // Not used currently
-  startWatcher() {
-    if (!this.filePath) return;
+  private _stopWatcher() {
+    this.unwatchFn?.();
+    this.unwatchFn = null;
+  }
 
-    const path = this.filePath;
+  private _watchFile(path: string) {
     let cancelled = false;
-    let unwatch: (() => void) | null = null;
+    const self = this
 
     watch(
       path,
-      async (_event: WatchEvent) => {
+      async function (event: WatchEvent) {
         if (cancelled) return;
-        console.log(_event)
-        const kind = _event.type as object
-        if ('access' in kind) return;
-        if (Date.now() - this.lastSaveAt < 500) return;
-        try {
-          this.reloading = true;
-          const text = await readTextFile(path);
-          if (!cancelled && text !== this.content) {
-            this.content = text;
-            this.dirty = false;
-            this.error = "";
-            this.updateTitle();
-          }
-        } catch (e) {
-          if (!cancelled) this.error = String(e);
-        } finally {
-          if (!cancelled) this.reloading = false;
+        if (Date.now() - self.lastSaveAt < 500) return;
+
+        const kind = event.type as object;
+        const isModify = "modify" in kind;
+        const isRemove = "remove" in kind;
+        if (!isModify && !isRemove) return;
+
+        const reload = await confirm('The file was modified on disk. Do you want to reload it?', {
+          title: "File changed on disk",
+          kind: "warning",
+        });
+
+        if (reload && !cancelled) {
+          await self.openPath(path);
         }
       },
       { delayMs: 200 },
     )
       .then((fn) => {
-        if (cancelled) fn();
-        else unwatch = fn;
+        if (cancelled) { fn(); return; }
+        this.unwatchFn = () => {
+          cancelled = true;
+          fn();
+        };
       })
       .catch((e) => {
         console.error("[watch] failed to start:", e);
       });
-
-    return () => {
-      cancelled = true;
-      unwatch?.();
-    };
   }
 }
 
