@@ -10,6 +10,7 @@ A minimalist markdown editor.
 
 - Syntax highlighting for Markdown via CodeMirror 6 (Lezer parser)
 - Syntax highlighting inside fenced code blocks (50+ languages, lazy-loaded)
+- Auto-save with 1.5 s debounce
 - File link autocomplete: type `[text](` to search for files relative to the open document
 - Keyboard shortcuts:
   - `Ctrl+O` — Open file

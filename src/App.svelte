@@ -61,6 +61,17 @@
       if (path) fileStore.openPath(path);
     });
   });
+
+  // ─── Auto-save (debounced 1.5 s) ──────────────────────────────────────────
+  $effect(() => {
+    const c = fileStore.content;
+    if (!fileStore.filePath || !fileStore.dirty) return;
+    const timer = setTimeout(
+      () => fileStore.persist(fileStore.filePath, c),
+      1500,
+    );
+    return () => clearTimeout(timer);
+  });
 </script>
 
 <div class="app">
