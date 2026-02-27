@@ -1,7 +1,7 @@
 {
   "productName": "Himark",
   "version": "0.1.0",
-  "identifier": "com.himark.app",
+  "identifier": "dk.gusgram.himark",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
