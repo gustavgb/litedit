@@ -59,6 +59,8 @@ npm run tauri dev
 npm run tauri build
 ```
 
+More build options can be found [here](https://tauri.app/reference/cli/#build).
+
 The packaged app will be in `src-tauri/target/release/bundle/`.
 
 ## License
